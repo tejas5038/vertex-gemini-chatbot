@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vertex AI Gemini Chatbot</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🤖 AI Chatbot</h1>
+            <p class="subtitle">Powered by Google Vertex AI Gemini</p>
+        </header>
+
+        <div class="chat-container">
+            <div class="chat-messages" id="chatMessages">
+                <div class="system-message">
+                    <p>👋 Hello! I'm your AI assistant with special capabilities:</p>
+                    <ul>
+                        <li>🔢 <strong>Calculator</strong> - I can solve math problems</li>
+                        <li>🌐 <strong>Web Fetch</strong> - I can retrieve data from public APIs</li>
+                        <li>📧 <strong>Email</strong> - I can draft emails (stub mode)</li>
+                    </ul>
+                    <p>Try asking me: "What is 123 * 456?" or "Fetch Bitcoin price from https://api.coindesk.com/v1/bpi/currentprice.json"</p>
+                </div>
+            </div>
+
+            <div class="loading-indicator" id="loadingIndicator">
+                <div class="spinner"></div>
+                <span>Thinking...</span>
+            </div>
+
+            <div class="input-container">
+                <textarea 
+                    id="userInput" 
+                    placeholder="Type your message here..." 
+                    rows="3"
+                    maxlength="10000"
+                ></textarea>
+                <div class="button-row">
+                    <button id="sendButton" class="btn btn-primary">
+                        <span class="btn-text">Send</span>
+                    </button>
+                    <button id="resetButton" class="btn btn-secondary">
+                        <span class="btn-text">Clear History</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <footer>
+            <p>Session ID: <code id="sessionId"></code></p>
+            <p class="footer-note">Your conversation is stored securely in Firestore</p>
+        </footer>
+    </div>
+
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+</body>
+</html>
