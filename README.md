@@ -1,64 +1,126 @@
 # Vertex AI Gemini Agent Chatbot
 
-A production-ready AI chatbot powered by Google Vertex AI Gemini with conversation memory and tool-calling capabilities.
+A deployable AI agent application built with **Google Vertex AI Gemini**, **Firestore**, and **Cloud Run**. It demonstrates persistent conversational memory, controlled tool execution, API design, and practical production-oriented safeguards in one end-to-end project.
 
-## Features
+## Google technology focus
 
-- 🧠 **Persistent Memory**: Conversation history stored in Firestore per session
-- 🛠️ **Tool Calling**: Calculator, web fetch, and email stub tools
-- 🚀 **Production Ready**: Deploys to GCP Cloud Run
-- 💬 **Real-time UI**: Clean, responsive chat interface
-- 🔒 **Secure**: Input validation, whitelisting, safe execution
+- **Vertex AI Gemini** for model inference and tool-aware conversations
+- **Firestore** for session-scoped persistent conversation history
+- **Cloud Run** for containerized serverless deployment
+- **Google Cloud authentication** through Application Default Credentials
 
-## Tools Available
+## What this project demonstrates
 
-1. **Calculator**: Safe mathematical expression evaluation
-2. **Web Fetch**: HTTP requests to whitelisted public APIs
-3. **Email (Stub)**: Interface ready for Gmail API integration
+This repository is designed as a practical reference for developers building agentic applications on Google Cloud. Rather than stopping at a single prompt/response example, it connects the model to memory, tools, an HTTP application layer, and deployable infrastructure.
 
-## Prerequisites
+### Core capabilities
 
-- Python 3.11+
-- GCP Project with Vertex AI API enabled
-- Firestore database created
-- GCP credentials configured locally
+- **Persistent memory** — conversation history is stored per session in Firestore
+- **Tool calling** — the agent can invoke a calculator, a restricted web-fetch tool, and an email integration interface
+- **REST API** — Flask endpoints support chat and session reset flows
+- **Cloud deployment** — the application is structured for deployment to Cloud Run
+- **Input safeguards** — validation, request-size controls, and domain allowlisting reduce unsafe tool execution
+- **Responsive web UI** — a lightweight front end provides an interactive chat experience
 
-## Quick Start
+## Architecture
 
-### 1. Clone and Setup
+```text
+User
+  ↓
+Flask Web/API Layer
+  ↓
+Vertex AI Gemini
+  ├── Conversation reasoning
+  └── Tool selection
+        ├── Calculator
+        ├── Restricted Web Fetch
+        └── Email integration interface
+  ↓
+Firestore session memory
+  ↓
+Cloud Run deployment
+```
+
+## Tech stack
+
+| Layer | Technology |
+|---|---|
+| AI | Google Vertex AI Gemini |
+| Memory | Google Cloud Firestore |
+| Compute | Google Cloud Run |
+| Backend | Python 3.11+, Flask |
+| Front end | HTML, CSS, JavaScript |
+| Auth | Google Cloud Application Default Credentials |
+
+## Quick start
+
+### 1. Clone the repository
 
 ```bash
-cd vertex-gemini-agent-chatbot
+git clone https://github.com/tejas5038/vertex-gemini-chatbot.git
+cd vertex-gemini-chatbot
+```
+
+### 2. Create a virtual environment
+
+```bash
 python -m venv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
+source venv/bin/activate
 pip install -r requirements.txt
 ```
 
-### 2. Configure Environment
+On Windows, activate with:
+
+```powershell
+venv\Scripts\activate
+```
+
+### 3. Configure Google Cloud
+
+Create your local environment file:
 
 ```bash
 cp .env.example .env
-# Edit .env with your GCP project details
 ```
 
-### 3. Authenticate with GCP
+Then configure your Google Cloud project and enable the services required by the application, including Vertex AI and Firestore.
+
+Authenticate locally:
 
 ```bash
 gcloud auth application-default login
 gcloud config set project YOUR_PROJECT_ID
 ```
 
-### 4. Run Locally
+### 4. Run locally
 
 ```bash
 python app.py
 ```
 
-Visit http://localhost:8080
+Open `http://localhost:8080`.
 
-## Deployment to Cloud Run
+## Example API calls
 
-### 1. Build and Deploy
+Send a message:
+
+```bash
+curl -X POST http://localhost:8080/api/chat \
+  -H "Content-Type: application/json" \
+  -d '{"session_id":"demo-session","user_message":"What is 25 * 47?"}'
+```
+
+Reset a conversation:
+
+```bash
+curl -X POST http://localhost:8080/api/reset \
+  -H "Content-Type: application/json" \
+  -d '{"session_id":"demo-session"}'
+```
+
+## Deploy to Cloud Run
+
+After configuring your project-specific environment variables, deploy from the repository root:
 
 ```bash
 gcloud run deploy vertex-gemini-chatbot \
@@ -66,68 +128,43 @@ gcloud run deploy vertex-gemini-chatbot \
   --platform managed \
   --region us-central1 \
   --allow-unauthenticated \
-  --set-env-vars GCP_PROJECT_ID=your-project-id,GCP_LOCATION=us-central1,GEMINI_MODEL=gemini-2.0-flash-exp,FIRESTORE_COLLECTION=chat_sessions
+  --set-env-vars GCP_PROJECT_ID=YOUR_PROJECT_ID,GCP_LOCATION=us-central1,FIRESTORE_COLLECTION=chat_sessions
 ```
 
-### 2. Access Your App
+For a real production deployment, review authentication, authorization, rate limiting, logging, secrets management, and access policy before exposing the service publicly.
 
-The deployment will provide a URL like:
-https://vertex-gemini-chatbot-xxxxx-uc.a.run.app
+## Security design
 
-## Testing
+The sample includes several safeguards that are useful when building tool-enabled AI systems:
 
-### cURL Examples
+- calculator expressions are constrained rather than passed to unrestricted execution
+- web requests are limited to approved domains
+- inputs and request sizes are validated
+- credentials are expected to remain outside source control
+- the email capability is an integration interface and is not enabled with embedded credentials
 
-```bash
-# Send a chat message
-curl -X POST http://localhost:8080/api/chat \
-  -H "Content-Type: application/json" \
-  -d '{"session_id": "test-session-1", "user_message": "What is 25 * 47?"}'
+## Why this is useful
 
-# Reset conversation
-curl -X POST http://localhost:8080/api/reset \
-  -H "Content-Type: application/json" \
-  -d '{"session_id": "test-session-1"}'
+This project can be used as a starting point for workshops, demos, and experiments involving:
 
-# Test web fetch tool
-curl -X POST http://localhost:8080/api/chat \
-  -H "Content-Type: application/json" \
-  -d '{"session_id": "test-session-2", "user_message": "Fetch the current Bitcoin price from https://api.coindesk.com/v1/bpi/currentprice.json"}'
-```
+- Gemini-powered conversational applications
+- agent memory patterns
+- tool-use orchestration
+- serverless AI deployment on Google Cloud
+- secure integration of LLMs with external capabilities
 
-## Architecture
+## Selected upstream open-source contributions
 
-```
-User → Flask App → Vertex AI Gemini → Tool Execution → Firestore
-         ↓                                ↓
-    HTML/CSS/JS                    Calculator/WebFetch/Email
-```
+Alongside building Google-technology projects, I contribute fixes and tests to open-source projects in the Google ecosystem.
 
-## Security Notes
+- [Google Magika — PR #1443](https://github.com/google/magika/pull/1443) — merged upstream
+- [Google Highway — PR #3361](https://github.com/google/highway/pull/3361) — merged upstream
 
-- Calculator: Only evaluates safe mathematical expressions
-- Web Fetch: Whitelisted domains only
-- Email: Stub implementation with OAuth placeholder
-- Input validation on all endpoints
-- Request size limits enforced
+## Author
 
-## Email Tool Setup (Optional)
-
-To enable the email tool:
-
-1. Enable Gmail API in GCP Console
-2. Create OAuth 2.0 credentials
-3. Download credentials.json
-4. Run the OAuth flow locally
-5. Update `shared/tools.py` with credentials path
-6. Uncomment email execution code
-
-## Environment Variables
-
-- `GCP_PROJECT_ID`: Your GCP project ID
-- `GCP_LOCATION`: Vertex AI location (e.g., us-central1)
-- `GEMINI_MODEL`: Model name (default: gemini-2.0-flash-exp)
-- `FIRESTORE_COLLECTION`: Collection name for chat history
+**Tejas Pravinbhai Patel**  
+Software Development Engineer | AI, distributed systems, and cloud engineering  
+GitHub: [@tejas5038](https://github.com/tejas5038)
 
 ## License
 
